@@ -1,29 +1,42 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  imports: [CommonModule, ReactiveFormsModule, RouterLink], // Importante para o HTML reconhecer o form
+  templateUrl: './login.html'
 })
-export class LoginComponent implements OnInit {
-  loginForm!: FormGroup;
+export class LoginComponent {
+  loginForm: FormGroup;
 
-  constructor(private fb: FormBuilder) {}
-
-  ngOnInit(): void {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) {
+    // Definindo o formulário e as validações
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      email: ['', [Validators.required, Validators.email]], // Valida se é um e-mail real
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  onSubmit(): void {
+  onSubmit() {
     if (this.loginForm.valid) {
-      console.log(this.loginForm.value);
+      this.authService.login(this.loginForm.value).subscribe({
+        next: (res) => {
+          console.log('Sucesso!', res);
+          this.router.navigate(['/dashboard']); // Redireciona após o sucesso
+        },
+        error: (err) => {
+          console.error('Erro detalhado:', err);
+          alert('Credenciais inválidas ou erro no servidor');
+        }
+      });
     }
   }
 }
