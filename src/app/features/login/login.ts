@@ -26,17 +26,26 @@ export class LoginComponent {
   }
 
   onSubmit() {
-    if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value).subscribe({
-        next: (res) => {
-          console.log('Sucesso!', res);
-          this.router.navigate(['/dashboard']); // Redireciona após o sucesso
-        },
-        error: (err) => {
-          console.error('Erro detalhado:', err);
-          alert('Credenciais inválidas ou erro no servidor');
+  if (this.loginForm.valid) {
+    this.authService.login(this.loginForm.value).subscribe({
+      next: (res) => {
+        console.log('Sucesso!', res);
+        
+        // SALVAR O TOKEN: Essencial para o Auth Guard funcionar!
+        // Ajuste 'res.token' conforme a estrutura do JSON que sua API retorna
+        if (res.token) {
+          localStorage.setItem('token', res.token);
+        } else if (res.data?.token) {
+          localStorage.setItem('token', res.data.token);
         }
-      });
-    }
+
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        console.error('Erro detalhado:', err);
+        alert('Credenciais inválidas ou erro no servidor');
+      }
+    });
   }
+}
 }
