@@ -19,6 +19,10 @@ export class AuthService {
       })
     );
   }
+  register(userData: any): Observable<any> {
+    return this.http.post(`${this.API}/register`, userData); 
+  // Verifique se o caminho no backend é /auth/register ou apenas /users
+  }
   
 }
 
