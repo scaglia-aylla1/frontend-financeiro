@@ -29,11 +29,13 @@ export class RegisterComponent {
 
   onSubmit() {
     if (this.registerForm.valid) {
-      // Aqui você chamará o método de cadastro no seu AuthService
       this.authService.register(this.registerForm.value).subscribe({
         next: (res) => {
+          if (res.data?.accessToken && res.data?.refreshToken) {
+            this.authService.persistSession(res.data);
+          }
           alert('Cadastro realizado com sucesso!');
-          this.router.navigate(['/login']);
+          this.router.navigate(['/dashboard']);
         },
         error: (err) => alert('Erro ao cadastrar: ' + err.error.message)
       });
