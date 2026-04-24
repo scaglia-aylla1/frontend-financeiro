@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Categoria, Transacao } from '../../core/models/transacao.model';
+import { Categoria, Transacao, TransacaoFiltro } from '../../core/models/transacao.model';
 import { TransacaoService } from '../../core/services/transacao';
 
 @Component({
@@ -21,10 +21,14 @@ export class DashboardComponent implements OnInit {
   modoEdicao = false;
   itemEditandoId: number | null = null;
   formTransacao: FormGroup;
+  filtroForm: FormGroup;
 
   saldoTotal = 0;
   totalReceitas = 0;
   totalDespesas = 0;
+  paginaAtual = 0;
+  tamanhoPagina = 10;
+  totalPaginas = 1;
 
   constructor(
     private transacaoService: TransacaoService,
@@ -38,6 +42,12 @@ export class DashboardComponent implements OnInit {
       categoriaId: ['', Validators.required],
       natureza: ['VARIAVEL', Validators.required],
       tipo: ['DESPESA', Validators.required]
+    });
+
+    this.filtroForm = this.fb.group({
+      categoriaId: [''],
+      dataInicial: [''],
+      dataFinal: ['']
     });
   }
 
@@ -54,16 +64,23 @@ export class DashboardComponent implements OnInit {
   }
 
   carregarDadosFinanceiros(): void {
-    this.transacaoService.getDadosIniciaisDashboard().subscribe({
+    const filtro: TransacaoFiltro = {
+      ...this.extrairFiltros(),
+      page: this.paginaAtual,
+      size: this.tamanhoPagina
+    };
+
+    this.transacaoService.getDadosDashboard(filtro).subscribe({
       next: (res) => {
         this.categorias = res.categorias;
 
-        const receitas = res.receitas.map((r: Transacao) => ({ ...r, tipo: 'RECEITA' as const }));
-        const despesas = res.despesas.map((d: Transacao) => ({ ...d, tipo: 'DESPESA' as const }));
+        const receitas = (res.receitas.content ?? []).map((r: Transacao) => ({ ...r, tipo: 'RECEITA' as const }));
+        const despesas = (res.despesas.content ?? []).map((d: Transacao) => ({ ...d, tipo: 'DESPESA' as const }));
 
         this.transacoesExibicao = [...receitas, ...despesas].sort((a, b) => {
           return new Date(b.data).getTime() - new Date(a.data).getTime();
         });
+        this.totalPaginas = Math.max(res.receitas.totalPages || 1, res.despesas.totalPages || 1, 1);
 
         this.calcularResumo(receitas, despesas);
       },
@@ -170,6 +187,34 @@ export class DashboardComponent implements OnInit {
     this.resetFormulario();
   }
 
+  aplicarFiltros(): void {
+    this.paginaAtual = 0;
+    this.carregarDadosFinanceiros();
+  }
+
+  limparFiltros(): void {
+    this.filtroForm.reset({
+      categoriaId: '',
+      dataInicial: '',
+      dataFinal: ''
+    });
+    this.aplicarFiltros();
+  }
+
+  proximaPagina(): void {
+    if (this.paginaAtual < this.totalPaginas - 1) {
+      this.paginaAtual++;
+      this.carregarDadosFinanceiros();
+    }
+  }
+
+  paginaAnterior(): void {
+    if (this.paginaAtual > 0) {
+      this.paginaAtual--;
+      this.carregarDadosFinanceiros();
+    }
+  }
+
   private calcularResumo(receitas: Transacao[], despesas: Transacao[]): void {
     this.totalReceitas = receitas.reduce((acc, r) => acc + r.valor, 0);
     this.totalDespesas = despesas.reduce((acc, d) => acc + d.valor, 0);
@@ -190,5 +235,14 @@ export class DashboardComponent implements OnInit {
     this.modoEdicao = false;
     this.itemEditandoId = null;
     this.mostrarFormulario = false;
+  }
+
+  private extrairFiltros(): TransacaoFiltro {
+    const { categoriaId, dataInicial, dataFinal } = this.filtroForm.value;
+    return {
+      categoriaId: categoriaId ? Number(categoriaId) : undefined,
+      dataInicial: dataInicial || undefined,
+      dataFinal: dataFinal || undefined
+    };
   }
 }

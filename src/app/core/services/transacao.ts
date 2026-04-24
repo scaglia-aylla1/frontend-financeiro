@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, forkJoin, map } from 'rxjs';
 import {
   ApiResponse,
   BalancoMensal,
   Categoria,
   PagedResponse,
+  TransacaoFiltro,
   Transacao,
 } from '../models/transacao.model';
 
@@ -17,16 +18,18 @@ export class TransacaoService {
 
   constructor(private http: HttpClient) {}
 
-  getReceitas(): Observable<Transacao[]> {
+  getReceitas(filtro?: TransacaoFiltro): Observable<PagedResponse<Transacao>> {
+    const params = this.buildParams(filtro);
     return this.http
-      .get<ApiResponse<PagedResponse<Transacao>>>(`${this.API_BASE}/receitas`)
-      .pipe(map((res) => res.data.content ?? []));
+      .get<ApiResponse<PagedResponse<Transacao>>>(`${this.API_BASE}/receitas`, { params })
+      .pipe(map((res) => res.data));
   }
 
-  getDespesas(): Observable<Transacao[]> {
+  getDespesas(filtro?: TransacaoFiltro): Observable<PagedResponse<Transacao>> {
+    const params = this.buildParams(filtro);
     return this.http
-      .get<ApiResponse<PagedResponse<Transacao>>>(`${this.API_BASE}/despesas`)
-      .pipe(map((res) => res.data.content ?? []));
+      .get<ApiResponse<PagedResponse<Transacao>>>(`${this.API_BASE}/despesas`, { params })
+      .pipe(map((res) => res.data));
   }
 
   getCategorias(): Observable<Categoria[]> {
@@ -42,13 +45,21 @@ export class TransacaoService {
   }
 
   getDadosIniciaisDashboard(): Observable<{
-    receitas: Transacao[];
-    despesas: Transacao[];
+    receitas: PagedResponse<Transacao>;
+    despesas: PagedResponse<Transacao>;
+    categorias: Categoria[];
+  }>{
+    return this.getDadosDashboard();
+  }
+
+  getDadosDashboard(filtro?: TransacaoFiltro): Observable<{
+    receitas: PagedResponse<Transacao>;
+    despesas: PagedResponse<Transacao>;
     categorias: Categoria[];
   }> {
     return forkJoin({
-      receitas: this.getReceitas(),
-      despesas: this.getDespesas(),
+      receitas: this.getReceitas(filtro),
+      despesas: this.getDespesas(filtro),
       categorias: this.getCategorias(),
     });
   }
@@ -94,5 +105,27 @@ export class TransacaoService {
       return '/api/v1';
     }
     return 'https://financeiro-wh8x.onrender.com/api/v1';
+  }
+
+  private buildParams(filtro?: TransacaoFiltro): HttpParams {
+    let params = new HttpParams();
+    if (!filtro) return params;
+
+    if (filtro.categoriaId) {
+      params = params.set('categoriaId', String(filtro.categoriaId));
+    }
+    if (filtro.dataInicial) {
+      params = params.set('dataInicial', filtro.dataInicial);
+    }
+    if (filtro.dataFinal) {
+      params = params.set('dataFinal', filtro.dataFinal);
+    }
+    if (filtro.page !== undefined) {
+      params = params.set('page', String(filtro.page));
+    }
+    if (filtro.size !== undefined) {
+      params = params.set('size', String(filtro.size));
+    }
+    return params;
   }
 }
