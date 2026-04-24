@@ -1,0 +1,205 @@
+<div class="min-h-screen bg-gray-50 p-4 md:p-8">
+  <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Olá, {{ userName }}! 👋</h1>
+      <p class="text-gray-500 text-sm">Bem-vinda ao seu controle financeiro.</p>
+    </div>
+    <button (click)="logout()" class="text-red-500 hover:bg-red-50 px-4 py-2 rounded-lg transition-colors font-medium">
+      Sair
+    </button>
+  </header>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-blue-600 p-6 rounded-2xl shadow-lg text-white">
+      <p class="text-blue-100 text-sm font-medium uppercase tracking-wider">Saldo Total</p>
+      <h2 class="text-3xl font-bold mt-1">{{ saldoTotal | currency:'BRL' }}</h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-green-500">
+      <p class="text-gray-400 text-sm font-medium uppercase tracking-wider">Receitas</p>
+      <h2 class="text-2xl font-bold text-green-600 mt-1">{{ totalReceitas | currency:'BRL' }}</h2>
+    </div>
+
+    <div class="bg-white p-6 rounded-2xl shadow-sm border-l-4 border-red-500">
+      <p class="text-gray-400 text-sm font-medium uppercase tracking-wider">Despesas</p>
+      <h2 class="text-2xl font-bold text-red-600 mt-1">{{ totalDespesas | currency:'BRL' }}</h2>
+    </div>
+  </div>
+
+  <div class="mb-6 flex flex-wrap gap-3">
+    <button
+      (click)="toggleFormulario()"
+      [ngClass]="mostrarFormulario ? 'bg-gray-500' : 'bg-indigo-600'"
+      class="text-white px-6 py-3 rounded-xl shadow-md hover:opacity-90 transition-all font-bold flex items-center gap-2">
+      <span>{{ mostrarFormulario ? (modoEdicao ? '✕ Cancelar edição' : '✕ Cancelar') : '+ Nova Transação' }}</span>
+    </button>
+    <a
+      routerLink="/categorias"
+      class="px-6 py-3 rounded-xl shadow-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all font-bold">
+      Gerenciar categorias
+    </a>
+  </div>
+
+  <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+    <form [formGroup]="filtroForm" (ngSubmit)="aplicarFiltros()" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-gray-500 uppercase">Categoria</label>
+        <select formControlName="categoriaId" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+          <option value="">Todas</option>
+          @for (cat of categorias; track cat.id) {
+            <option [value]="cat.id">{{ cat.nome }}</option>
+          }
+        </select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-gray-500 uppercase">Data inicial</label>
+        <input formControlName="dataInicial" type="date" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-gray-500 uppercase">Data final</label>
+        <input formControlName="dataFinal" type="date" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+      </div>
+      <div class="flex gap-2 md:col-span-2">
+        <button type="submit" class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-bold hover:opacity-90 transition-all">
+          Aplicar filtros
+        </button>
+        <button type="button" (click)="limparFiltros()" class="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition-all">
+          Limpar
+        </button>
+      </div>
+    </form>
+  </section>
+
+  @if (mostrarFormulario) {
+    <section class="bg-white p-6 rounded-2xl shadow-md border border-indigo-100 mb-8 animate-in fade-in slide-in-from-top-4 duration-300">
+      <h3 class="text-lg font-bold text-gray-700 mb-4">{{ modoEdicao ? 'Editar Lançamento' : 'Novo Lançamento' }}</h3>
+      
+      <form [formGroup]="formTransacao" (ngSubmit)="salvarNovaTransacao()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-gray-500 uppercase">Descrição</label>
+          <input formControlName="descricao" type="text" placeholder="Ex: Aluguel, Salário..."
+                 class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-gray-500 uppercase">Valor</label>
+          <input formControlName="valor" type="number" placeholder="0,00"
+                 class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-gray-500 uppercase">Tipo</label>
+          <select formControlName="tipo" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="RECEITA">Receita (Entrada)</option>
+            <option value="DESPESA">Despesa (Saída)</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-gray-500 uppercase">Categoria</label>
+          <select formControlName="categoriaId" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="">Selecione...</option>
+            @for (cat of categoriasFormulario; track cat.id) {
+              <option [value]="cat.id">{{ cat.nome }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-gray-500 uppercase">Natureza</label>
+          <select formControlName="natureza" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+            <option value="FIXA">Fixa</option>
+            <option value="VARIAVEL">Variável</option>
+          </select>
+        </div>
+
+        <div class="flex items-end">
+          <button type="submit" [disabled]="formTransacao.invalid"
+                  class="w-full bg-green-600 text-white p-2.5 rounded-lg font-bold hover:bg-green-700 disabled:bg-gray-200 disabled:cursor-not-allowed transition-all">
+            {{ modoEdicao ? 'Atualizar' : 'Salvar' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+
+  <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-50">
+      <h3 class="text-lg font-bold text-gray-800">Últimos Lançamentos</h3>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+            <th class="px-6 py-4">Descrição</th>
+            <th class="px-6 py-4">Categoria</th>
+            <th class="px-6 py-4">Data</th>
+            <th class="px-6 py-4 text-right">Valor</th>
+            <th class="px-6 py-4 text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          @for (item of transacoesExibicao; track item.id) {
+            <tr class="hover:bg-gray-50 transition-colors group">
+              <td class="px-6 py-4 text-sm font-semibold text-gray-700">{{ item.descricao }}</td>
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 uppercase">
+                  {{ item.categoria?.nome || 'Geral' }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-sm text-gray-400">{{ item.data | date:'dd/MM/yyyy' }}</td>
+              <td class="px-6 py-4 text-right font-bold text-sm"
+                  [ngClass]="item.tipo === 'RECEITA' ? 'text-green-500' : 'text-red-500'">
+                {{ item.tipo === 'RECEITA' ? '+' : '-' }} {{ item.valor | currency:'BRL' }}
+              </td>
+              <td class="px-6 py-4">
+                <div class="flex items-center justify-center gap-2">
+                  <button
+                    type="button"
+                    (click)="editarTransacao(item)"
+                    class="px-3 py-1 text-xs font-bold rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    (click)="excluirTransacao(item)"
+                    class="px-3 py-1 text-xs font-bold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                    Excluir
+                  </button>
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                <p>Nenhuma transação encontrada.</p>
+                <p class="text-xs mt-1">Comece adicionando um novo lançamento acima!</p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="flex items-center justify-between p-4 border-t border-gray-100">
+      <button
+        type="button"
+        (click)="paginaAnterior()"
+        [disabled]="paginaAtual === 0"
+        class="px-4 py-2 rounded-lg font-bold bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-all">
+        Anterior
+      </button>
+      <p class="text-sm text-gray-500">
+        Página {{ paginaAtual + 1 }} de {{ totalPaginas }}
+      </p>
+      <button
+        type="button"
+        (click)="proximaPagina()"
+        [disabled]="paginaAtual >= totalPaginas - 1"
+        class="px-4 py-2 rounded-lg font-bold bg-gray-100 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-all">
+        Próxima
+      </button>
+    </div>
+  </section>
+</div>
