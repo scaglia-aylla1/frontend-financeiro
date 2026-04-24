@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { Categoria } from '../../core/models/transacao.model';
 import { TransacaoService } from '../../core/services/transacao';
+import { ToastService } from '../../core/services/toast';
 
 @Component({
   selector: 'app-categorias',
@@ -22,6 +23,7 @@ export class CategoriasComponent implements OnInit {
     private transacaoService: TransacaoService,
     private fb: FormBuilder,
     private router: Router,
+    private toastService: ToastService,
   ) {
     this.formCategoria = this.fb.group({
       nome: ['', [Validators.required, Validators.maxLength(100)]],
@@ -63,13 +65,13 @@ export class CategoriasComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        alert(this.modoEdicao ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!');
+        this.toastService.success(this.modoEdicao ? 'Categoria atualizada com sucesso!' : 'Categoria criada com sucesso!');
         this.resetFormulario();
         this.carregarCategorias();
       },
       error: (err) => {
         const mensagem = err?.error?.message || 'Erro ao salvar categoria.';
-        alert(mensagem);
+        this.toastService.error(mensagem);
       },
     });
   }
@@ -89,7 +91,7 @@ export class CategoriasComponent implements OnInit {
 
     this.transacaoService.excluirCategoria(categoria.id).subscribe({
       next: () => {
-        alert('Categoria excluída com sucesso!');
+        this.toastService.success('Categoria excluída com sucesso!');
         if (this.categoriaEditandoId === categoria.id) {
           this.resetFormulario();
         }
@@ -97,7 +99,7 @@ export class CategoriasComponent implements OnInit {
       },
       error: (err) => {
         const mensagem = err?.error?.message || 'Não foi possível excluir a categoria.';
-        alert(mensagem);
+        this.toastService.error(mensagem);
       },
     });
   }

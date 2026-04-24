@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
+import { ToastService } from '../../core/services/toast';
 
 
 @Component({
@@ -18,7 +19,8 @@ export class RegisterComponent {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private toastService: ToastService
   ) {
     this.registerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
@@ -34,10 +36,10 @@ export class RegisterComponent {
           if (res.data?.accessToken && res.data?.refreshToken) {
             this.authService.persistSession(res.data);
           }
-          alert('Cadastro realizado com sucesso!');
+          this.toastService.success('Cadastro realizado com sucesso!');
           this.router.navigate(['/dashboard']);
         },
-        error: (err) => alert('Erro ao cadastrar: ' + err.error.message)
+        error: (err) => this.toastService.error('Erro ao cadastrar: ' + (err?.error?.message || 'falha desconhecida'))
       });
     }
   }

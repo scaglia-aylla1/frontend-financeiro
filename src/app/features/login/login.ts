@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
+import { ToastService } from '../../core/services/toast';
 
 @Component({
   selector: 'app-login',
@@ -17,6 +18,7 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private toastService: ToastService,
   ) {
     // Definindo o formulário e as validações
     this.loginForm = this.fb.group({
@@ -39,7 +41,7 @@ export class LoginComponent {
       },
       error: (err) => {
         console.error('Erro no login:', err);
-        alert('Erro ao realizar login. Verifique suas credenciais.');
+        this.toastService.error('Erro ao realizar login. Verifique suas credenciais.');
       },
     });
   }

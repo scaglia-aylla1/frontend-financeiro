@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { startWith } from 'rxjs';
 import { Categoria, Transacao, TransacaoFiltro } from '../../core/models/transacao.model';
 import { TransacaoService } from '../../core/services/transacao';
+import { ToastService } from '../../core/services/toast';
 
 @Component({
   selector: 'app-dashboard',
@@ -34,7 +35,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private transacaoService: TransacaoService,
     private router: Router,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private toastService: ToastService
   ) {
     this.formTransacao = this.fb.group({
       descricao: ['', [Validators.required, Validators.minLength(3)]],
@@ -116,11 +118,16 @@ export class DashboardComponent implements OnInit {
 
     const requestObserver = {
       next: () => {
-        alert(this.modoEdicao ? 'Lançamento atualizado com sucesso!' : 'Lançamento realizado com sucesso!');
+        this.toastService.success(
+          this.modoEdicao ? 'Lançamento atualizado com sucesso!' : 'Lançamento realizado com sucesso!'
+        );
         this.resetFormulario();
         this.carregarDadosFinanceiros();
       },
-      error: (err: any) => console.error('Erro ao salvar:', err)
+      error: (err: any) => {
+        console.error('Erro ao salvar:', err);
+        this.toastService.error('Não foi possível salvar o lançamento.');
+      }
     };
 
     if (this.modoEdicao && this.itemEditandoId) {
@@ -154,7 +161,7 @@ export class DashboardComponent implements OnInit {
   editarTransacao(item: Transacao): void {
     const categoriaId = item.categoriaId ?? item.categoria?.id;
     if (!item.id || !categoriaId || !item.tipo) {
-      alert('Não foi possível editar este lançamento.');
+      this.toastService.error('Não foi possível editar este lançamento.');
       return;
     }
 
@@ -185,13 +192,16 @@ export class DashboardComponent implements OnInit {
 
     request$.subscribe({
       next: () => {
-        alert('Lançamento excluído com sucesso!');
+        this.toastService.success('Lançamento excluído com sucesso!');
         if (this.itemEditandoId === item.id) {
           this.resetFormulario();
         }
         this.carregarDadosFinanceiros();
       },
-      error: (err) => console.error('Erro ao excluir:', err)
+      error: (err) => {
+        console.error('Erro ao excluir:', err);
+        this.toastService.error('Não foi possível excluir o lançamento.');
+      }
     });
   }
 
