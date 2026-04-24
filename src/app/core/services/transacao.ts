@@ -38,6 +38,24 @@ export class TransacaoService {
       .pipe(map((res) => res.data ?? []));
   }
 
+  criarCategoria(categoria: Pick<Categoria, 'nome' | 'tipo'>): Observable<Categoria> {
+    return this.http
+      .post<ApiResponse<Categoria>>(`${this.API_BASE}/categorias`, categoria)
+      .pipe(map((res) => res.data));
+  }
+
+  atualizarCategoria(id: number, categoria: Pick<Categoria, 'nome' | 'tipo'>): Observable<Categoria> {
+    return this.http
+      .put<ApiResponse<Categoria>>(`${this.API_BASE}/categorias/${id}`, categoria)
+      .pipe(map((res) => res.data));
+  }
+
+  excluirCategoria(id: number): Observable<void> {
+    return this.http
+      .delete<ApiResponse<null>>(`${this.API_BASE}/categorias/${id}`)
+      .pipe(map(() => void 0));
+  }
+
   getRelatorioMensal(mes: number, ano: number): Observable<BalancoMensal> {
     return this.http
       .get<ApiResponse<BalancoMensal>>(`${this.API_BASE}/relatorios/balanco/${ano}/${mes}`)

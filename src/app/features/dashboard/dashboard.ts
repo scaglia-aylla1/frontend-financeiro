@@ -1,14 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { startWith } from 'rxjs';
 import { Categoria, Transacao, TransacaoFiltro } from '../../core/models/transacao.model';
 import { TransacaoService } from '../../core/services/transacao';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule], // Adicionado ReactiveFormsModule aqui
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })
@@ -49,6 +50,17 @@ export class DashboardComponent implements OnInit {
       dataInicial: [''],
       dataFinal: ['']
     });
+
+    this.formTransacao
+      .get('tipo')
+      ?.valueChanges.pipe(startWith(this.formTransacao.get('tipo')?.value))
+      .subscribe((tipo) => {
+        const categoriaSelecionada = Number(this.formTransacao.get('categoriaId')?.value);
+        const categoriaValida = this.categorias.some((c) => c.id === categoriaSelecionada && c.tipo === tipo);
+        if (!categoriaValida) {
+          this.formTransacao.patchValue({ categoriaId: '' }, { emitEvent: false });
+        }
+      });
   }
 
   ngOnInit(): void {
@@ -244,5 +256,10 @@ export class DashboardComponent implements OnInit {
       dataInicial: dataInicial || undefined,
       dataFinal: dataFinal || undefined
     };
+  }
+
+  get categoriasFormulario(): Categoria[] {
+    const tipoSelecionado = this.formTransacao.get('tipo')?.value as Categoria['tipo'];
+    return this.categorias.filter((categoria) => categoria.tipo === tipoSelecionado);
   }
 }

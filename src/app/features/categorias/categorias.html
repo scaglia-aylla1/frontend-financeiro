@@ -1,0 +1,107 @@
+<div class="min-h-screen bg-gray-50 p-4 md:p-8">
+  <header class="flex justify-between items-center mb-8 bg-white p-6 rounded-2xl shadow-sm">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">Categorias</h1>
+      <p class="text-gray-500 text-sm">Gerencie as categorias de receita e despesa.</p>
+    </div>
+    <a
+      routerLink="/dashboard"
+      class="px-4 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">
+      Voltar ao dashboard
+    </a>
+  </header>
+
+  <section class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+    <h2 class="text-lg font-bold text-gray-700 mb-4">{{ modoEdicao ? 'Editar categoria' : 'Nova categoria' }}</h2>
+    <form [formGroup]="formCategoria" (ngSubmit)="salvarCategoria()" class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-gray-500 uppercase">Nome</label>
+        <input
+          formControlName="nome"
+          type="text"
+          placeholder="Ex: Alimentação"
+          class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-bold text-gray-500 uppercase">Tipo</label>
+        <select formControlName="tipo" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+          <option value="RECEITA">Receita</option>
+          <option value="DESPESA">Despesa</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          [disabled]="formCategoria.invalid"
+          class="bg-indigo-600 text-white px-4 py-2.5 rounded-lg font-bold hover:opacity-90 disabled:bg-gray-200 disabled:cursor-not-allowed transition-all">
+          {{ modoEdicao ? 'Atualizar' : 'Salvar' }}
+        </button>
+        @if (modoEdicao) {
+          <button
+            type="button"
+            (click)="cancelarEdicao()"
+            class="bg-gray-100 text-gray-700 px-4 py-2.5 rounded-lg font-bold hover:bg-gray-200 transition-all">
+            Cancelar
+          </button>
+        }
+      </div>
+    </form>
+  </section>
+
+  <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="p-6 border-b border-gray-50">
+      <h3 class="text-lg font-bold text-gray-800">Lista de categorias</h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-50 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+            <th class="px-6 py-4">Nome</th>
+            <th class="px-6 py-4">Tipo</th>
+            <th class="px-6 py-4 text-center">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          @if (carregando) {
+            <tr>
+              <td colspan="3" class="px-6 py-8 text-center text-gray-400">Carregando categorias...</td>
+            </tr>
+          } @else {
+            @for (categoria of categorias; track categoria.id) {
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 text-sm font-semibold text-gray-700">{{ categoria.nome }}</td>
+                <td class="px-6 py-4">
+                  <span
+                    class="px-3 py-1 text-[10px] font-bold rounded-full uppercase"
+                    [ngClass]="categoria.tipo === 'RECEITA' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'">
+                    {{ categoria.tipo }}
+                  </span>
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      (click)="editarCategoria(categoria)"
+                      class="px-3 py-1 text-xs font-bold rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      (click)="excluirCategoria(categoria)"
+                      class="px-3 py-1 text-xs font-bold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                      Excluir
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="3" class="px-6 py-10 text-center text-gray-400">Nenhuma categoria cadastrada.</td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

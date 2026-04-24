@@ -26,12 +26,18 @@
     </div>
   </div>
 
-  <div class="mb-6">
-    <button (click)="toggleFormulario()" 
+  <div class="mb-6 flex flex-wrap gap-3">
+    <button
+      (click)="toggleFormulario()"
       [ngClass]="mostrarFormulario ? 'bg-gray-500' : 'bg-indigo-600'"
       class="text-white px-6 py-3 rounded-xl shadow-md hover:opacity-90 transition-all font-bold flex items-center gap-2">
       <span>{{ mostrarFormulario ? (modoEdicao ? '✕ Cancelar edição' : '✕ Cancelar') : '+ Nova Transação' }}</span>
     </button>
+    <a
+      routerLink="/categorias"
+      class="px-6 py-3 rounded-xl shadow-md bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all font-bold">
+      Gerenciar categorias
+    </a>
   </div>
 
   <section class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
@@ -94,7 +100,7 @@
           <label class="text-xs font-bold text-gray-500 uppercase">Categoria</label>
           <select formControlName="categoriaId" class="border border-gray-200 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
             <option value="">Selecione...</option>
-            @for (cat of categorias; track cat.id) {
+            @for (cat of categoriasFormulario; track cat.id) {
               <option [value]="cat.id">{{ cat.nome }}</option>
             }
           </select>
