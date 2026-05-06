@@ -130,57 +130,73 @@
     </div>
 
     <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="bg-gray-50 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
-            <th class="px-6 py-4">Descrição</th>
-            <th class="px-6 py-4">Categoria</th>
-            <th class="px-6 py-4">Data</th>
-            <th class="px-6 py-4 text-right">Valor</th>
-            <th class="px-6 py-4 text-center">Ações</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-50">
-          @for (item of transacoesExibicao; track item.id) {
-            <tr class="hover:bg-gray-50 transition-colors group">
-              <td class="px-6 py-4 text-sm font-semibold text-gray-700">{{ item.descricao }}</td>
-              <td class="px-6 py-4">
-                <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 uppercase">
-                  {{ item.categoria?.nome || 'Geral' }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-sm text-gray-400">{{ item.data | date:'dd/MM/yyyy' }}</td>
-              <td class="px-6 py-4 text-right font-bold text-sm"
-                  [ngClass]="item.tipo === 'RECEITA' ? 'text-green-500' : 'text-red-500'">
-                {{ item.tipo === 'RECEITA' ? '+' : '-' }} {{ item.valor | currency:'BRL' }}
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center justify-center gap-2">
-                  <button
-                    type="button"
-                    (click)="editarTransacao(item)"
-                    class="px-3 py-1 text-xs font-bold rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
-                    Editar
-                  </button>
-                  <button
-                    type="button"
-                    (click)="excluirTransacao(item)"
-                    class="px-3 py-1 text-xs font-bold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
-                    Excluir
-                  </button>
-                </div>
-              </td>
+      @if (carregandoLancamentos && transacoesExibicao.length === 0) {
+        <div class="px-6 py-12 text-center text-gray-400">
+          Carregando lançamentos recentes...
+        </div>
+      } @else if (erroLancamentos) {
+        <div class="px-6 py-12 text-center text-gray-500">
+          <p class="font-semibold">Não foi possível carregar os dados.</p>
+          <p class="text-xs mt-1 text-gray-400">O servidor pode estar iniciando. Aguarde alguns segundos e tente novamente.</p>
+          <button
+            type="button"
+            (click)="tentarNovamenteLancamentos()"
+            class="mt-4 px-4 py-2 rounded-lg font-bold bg-indigo-600 text-white hover:opacity-90 transition-all">
+            Tentar novamente
+          </button>
+        </div>
+      } @else {
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 text-gray-400 uppercase text-[10px] font-bold tracking-widest">
+              <th class="px-6 py-4">Descrição</th>
+              <th class="px-6 py-4">Categoria</th>
+              <th class="px-6 py-4">Data</th>
+              <th class="px-6 py-4 text-right">Valor</th>
+              <th class="px-6 py-4 text-center">Ações</th>
             </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                <p>Nenhuma transação encontrada.</p>
-                <p class="text-xs mt-1">Comece adicionando um novo lançamento acima!</p>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (item of transacoesExibicao; track item.tipo + '-' + item.id) {
+              <tr class="hover:bg-gray-50 transition-colors group">
+                <td class="px-6 py-4 text-sm font-semibold text-gray-700">{{ item.descricao }}</td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 text-[10px] font-bold rounded-full bg-indigo-50 text-indigo-600 uppercase">
+                    {{ item.categoriaNome || item.categoria?.nome || 'Geral' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-400">{{ item.data | date:'dd/MM/yyyy' }}</td>
+                <td class="px-6 py-4 text-right font-bold text-sm"
+                    [ngClass]="item.tipo === 'RECEITA' ? 'text-green-500' : 'text-red-500'">
+                  {{ item.tipo === 'RECEITA' ? '+' : '-' }} {{ item.valor | currency:'BRL' }}
+                </td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center justify-center gap-2">
+                    <button
+                      type="button"
+                      (click)="editarTransacao(item)"
+                      class="px-3 py-1 text-xs font-bold rounded-md bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors">
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      (click)="excluirTransacao(item)"
+                      class="px-3 py-1 text-xs font-bold rounded-md bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                      Excluir
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                  Nenhuma transação encontrada.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
     <div class="flex items-center justify-between p-4 border-t border-gray-100">
       <button
