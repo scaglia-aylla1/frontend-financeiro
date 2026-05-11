@@ -35,9 +35,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   saldoTotal = 0;
   totalReceitas = 0;
   totalDespesas = 0;
-  paginaAtual = 0;
-  tamanhoPagina = 10;
-  totalPaginas = 1;
 
   constructor(
     private transacaoService: TransacaoService,
@@ -64,7 +61,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
     this.formTransacao
       .get('tipo')
-      ?.valueChanges.pipe(startWith(this.formTransacao.get('tipo')?.value))
+      ?.valueChanges.pipe(
+        startWith(this.formTransacao.get('tipo')?.value),
+        takeUntil(this.destroy$),
+      )
       .subscribe((tipo) => {
         const categoriaSelecionada = Number(this.formTransacao.get('categoriaId')?.value);
         const categoriaValida = this.categorias.some(
@@ -144,9 +144,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           this.transacoesExibicao = [...receitas, ...despesas]
             .sort((a, b) => new Date(b.data).getTime() - new Date(a.data).getTime())
             .slice(0, 10);
-
-          this.totalPaginas = 1;
-          this.paginaAtual = 0;
 
           this.calcularResumo(receitas, despesas);
 
@@ -267,7 +264,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   aplicarFiltros(): void {
-    this.paginaAtual = 0;
     this.carregarDadosFinanceiros();
   }
 
@@ -278,20 +274,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
       dataFinal: '',
     });
     this.carregarDadosDashboard();
-  }
-
-  proximaPagina(): void {
-    if (this.paginaAtual < this.totalPaginas - 1) {
-      this.paginaAtual++;
-      this.carregarDadosFinanceiros();
-    }
-  }
-
-  paginaAnterior(): void {
-    if (this.paginaAtual > 0) {
-      this.paginaAtual--;
-      this.carregarDadosFinanceiros();
-    }
   }
 
   tentarNovamenteLancamentos(): void {

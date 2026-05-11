@@ -44,22 +44,3 @@ export interface TransacaoFiltro {
   page?: number;
   size?: number;
 }
-
-export interface BalancoResponse {
-  totalReceitas: number;
-  totalDespesas: number;
-  balancoFinal: number;
-  receitasPorCategoria: Record<string, number>;
-  despesasPorCategoria: Record<string, number>;
-}
-
-export interface LancamentoResumo {
-  id: number;
-  descricao: string;
-  valor: number;
-  data: string;
-  tipo: 'RECEITA' | 'DESPESA';
-  natureza: string;
-  categoriaId: number;
-  categoriaNome: string;
-}

@@ -78,7 +78,7 @@ Essa organização ajuda a separar responsabilidades e facilita manutenção, te
 
 ### Serviços HTTP tipados
 
-As chamadas para a API foram centralizadas em serviços, como `AuthService`, `TransacaoService` e `RelatorioService`.
+As chamadas para a API foram centralizadas em serviços, como `AuthService` e `TransacaoService`.
 
 Essa decisão evita espalhar lógica HTTP pelos componentes e deixa a aplicação mais fácil de testar. Os models TypeScript representam contratos como transações, categorias, paginação e respostas da API.
 
@@ -145,7 +145,7 @@ Alguns pontos que podem ser citados com maturidade técnica:
 - O `authGuard` pode evoluir para usar `AuthService.isLogado()` e validar expiração do token antes de liberar a rota.
 - A paginação do dashboard pode ser conectada de forma mais fiel à paginação retornada pela API.
 - A URL da API pode ser movida para arquivos de environment, evitando repetição em serviços.
-- O `RelatorioService` pode ser integrado ao dashboard ou removido caso não seja necessário.
+- Serviços sem consumidores devem ser evitados ou removidos para reduzir código morto e manter a arquitetura mais simples.
 - Os testes do interceptor e do guard podem ser aprofundados com cenários reais de token válido, token expirado, refresh e falha de autenticação.
 - Para segurança em produção, é possível discutir o trade-off entre tokens em `localStorage` e cookies `httpOnly`.
 

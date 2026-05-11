@@ -23,4 +23,14 @@ describe('Dashboard', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('deve explicar que exibe ate 10 lancamentos recentes sem paginacao visual', () => {
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.textContent).toContain('Exibindo até 10 lançamentos mais recentes');
+    expect(compiled.textContent).not.toContain('Anterior');
+    expect(compiled.textContent).not.toContain('Próxima');
+  });
 });
