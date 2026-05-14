@@ -62,14 +62,6 @@ export class TransacaoService {
       .pipe(map((res) => res.data));
   }
 
-  getDadosIniciaisDashboard(): Observable<{
-    receitas: PagedResponse<Transacao>;
-    despesas: PagedResponse<Transacao>;
-    categorias: Categoria[];
-  }>{
-    return this.getDadosDashboard();
-  }
-
   getDadosDashboard(filtro?: TransacaoFiltro): Observable<{
     receitas: PagedResponse<Transacao>;
     despesas: PagedResponse<Transacao>;
@@ -80,6 +72,32 @@ export class TransacaoService {
       despesas: this.getDespesas(filtro),
       categorias: this.getCategorias(),
     });
+  }
+
+  getLancamentosRecentes(limit = 10, filtro?: TransacaoFiltro): Observable<Transacao[]> {
+    let params = this.buildParams(filtro);
+    params = params.set('limit', String(limit));
+    return this.http
+      .get<ApiResponse<Transacao[]> | { data: ApiResponse<Transacao[]> }>(
+        `${this.API_BASE}/relatorios/lancamentos/recentes`,
+        { params },
+      )
+      .pipe(
+        map((response) => {
+          const nestedData = (response as { data?: ApiResponse<Transacao[]> })?.data;
+          const rawPayload = nestedData?.data ?? (response as ApiResponse<Transacao[]>)?.data ?? [];
+          const payload = Array.isArray(rawPayload)
+            ? rawPayload
+            : Array.isArray((rawPayload as { content?: Transacao[] })?.content)
+              ? (rawPayload as { content: Transacao[] }).content
+              : [];
+
+          return payload.map((item) => ({
+            ...item,
+            categoria: item.categoria ?? (item.categoriaNome ? { id: item.categoriaId ?? 0, nome: item.categoriaNome, tipo: item.tipo ?? 'DESPESA' } : undefined),
+          }));
+        }),
+      );
   }
 
   salvarReceita(dados: Transacao): Observable<Transacao> {

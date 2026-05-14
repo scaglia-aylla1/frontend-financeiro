@@ -12,6 +12,7 @@ export interface Transacao {
   natureza: 'FIXA' | 'VARIAVEL';
   categoria?: Categoria;
   categoriaId?: number;
+  categoriaNome?: string;
   tipo?: 'RECEITA' | 'DESPESA';
 }
 

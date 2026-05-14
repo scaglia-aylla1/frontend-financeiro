@@ -92,4 +92,48 @@ describe('TransacaoService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush({ data: null, message: 'ok' });
   });
+
+  it('deve buscar lançamentos recentes com envelope aninhado', () => {
+    const recente: Transacao = {
+      ...transacao,
+      tipo: 'RECEITA',
+      categoriaId: 1,
+      categoriaNome: 'Salário',
+    };
+
+    service.getLancamentosRecentes(10).subscribe((res) => {
+      expect(res.length).toBe(1);
+      expect(res[0].descricao).toBe('Salário abril');
+      expect(res[0].categoria?.nome).toBe('Salário');
+    });
+
+    const req = httpMock.expectOne(
+      (r) => r.url === '/api/v1/relatorios/lancamentos/recentes' && r.params.get('limit') === '10',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      data: {
+        data: [recente],
+        message: 'Lançamentos recentes carregados.',
+      },
+    });
+  });
+
+  it('deve buscar lançamentos recentes com payload paginado em data.content', () => {
+    service.getLancamentosRecentes(5).subscribe((res) => {
+      expect(res.length).toBe(1);
+      expect(res[0].descricao).toBe('Salário abril');
+    });
+
+    const req = httpMock.expectOne(
+      (r) => r.url === '/api/v1/relatorios/lancamentos/recentes' && r.params.get('limit') === '5',
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      data: {
+        content: [transacao],
+      },
+      message: 'ok',
+    });
+  });
 });

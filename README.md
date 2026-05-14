@@ -101,3 +101,5 @@ Ao avaliar este repositório, os pontos técnicos de destaque são:
 - consumo consistente do contrato de API (`ApiResponse<T>`);
 - tratamento de sessão e expiração de token;
 - evolução incremental com commits por tarefa.
+
+Para uma explicação mais completa das decisões técnicas, funcionalidades e próximos passos, consulte a [apresentação técnica](docs/APRESENTACAO_TECNICA.md).

@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://financeiro-wh8x.onrender.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

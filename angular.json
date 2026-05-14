@@ -23,6 +23,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "_redirects",
+                "input": "public",
+                "output": "/"
               }
             ],
             "styles": [
@@ -60,7 +65,8 @@
               "buildTarget": "frontend-financeiro:build:production"
             },
             "development": {
-              "buildTarget": "frontend-financeiro:build:development"
+              "buildTarget": "frontend-financeiro:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

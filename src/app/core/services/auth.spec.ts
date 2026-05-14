@@ -8,6 +8,8 @@ import { ApiResponse } from '../models/transacao.model';
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
+  const criarToken = (exp: number): string =>
+    ['header', btoa(JSON.stringify({ exp })), 'signature'].join('.');
   const authResponse: ApiResponse<AuthPayload> = {
     data: {
       name: 'Aylla',
@@ -63,6 +65,26 @@ describe('AuthService', () => {
     expect(localStorage.getItem('token')).toBe('access-token');
     expect(localStorage.getItem('refreshToken')).toBe('refresh-token');
     expect(localStorage.getItem('userName')).toBe('Aylla');
+  });
+
+  it('deve considerar usuário logado quando o token não estiver expirado', () => {
+    const expFuturo = Math.floor(Date.now() / 1000) + 60;
+    localStorage.setItem('token', criarToken(expFuturo));
+
+    expect(service.isLogado()).toBe(true);
+  });
+
+  it('deve considerar usuário deslogado quando o token estiver expirado', () => {
+    const expPassado = Math.floor(Date.now() / 1000) - 60;
+    localStorage.setItem('token', criarToken(expPassado));
+
+    expect(service.isLogado()).toBe(false);
+  });
+
+  it('deve considerar usuário deslogado quando o token estiver malformado', () => {
+    localStorage.setItem('token', 'token-invalido');
+
+    expect(service.isLogado()).toBe(false);
   });
 
   it('deve limpar sessao do localStorage', () => {
