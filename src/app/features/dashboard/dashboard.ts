@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { filter, take, takeUntil, finalize, startWith } from 'rxjs/operators';
+import { takeUntil, finalize, startWith } from 'rxjs/operators';
 import { Categoria, Transacao, TransacaoFiltro } from '../../core/models/transacao.model';
 import { TransacaoService } from '../../core/services/transacao';
 import { AuthService } from '../../core/services/auth';
@@ -78,16 +78,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.carregarNomeUsuario();
-
-    // Aguarda o usuário estar disponível antes de carregar os dados do dashboard,
-    // eliminando a race condition entre ngOnInit e a leitura do token JWT.
-    this.authService.currentUser$
-      .pipe(
-        filter((user) => user !== null),
-        take(1),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(() => this.carregarDadosDashboard());
+    if (this.authService.isLogado()) {
+      this.carregarDadosDashboard();
+    }
   }
 
   ngOnDestroy(): void {
